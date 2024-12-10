@@ -42,7 +42,7 @@ def preprocess_input_for_prediction(input_data, zone='PowerConsumption_Zone1'):
 
 
 # Function to check anomaly using the trained model
-def check_anomaly_for_input(input_data, zone='PowerConsumption_Zone1', model_path='./models/power_consumption.pkl'):
+def check_anomaly_for_input(input_data, zone='PowerConsumption_Zone1', model_path='./power_consumption.pkl'):
     # Load the trained model, scaler, and PCA
     model_data = joblib.load(model_path)
     model = model_data['model']
