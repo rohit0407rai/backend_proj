@@ -6,11 +6,20 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.ensemble import IsolationForest
 from flask_cors import CORS
+import firebase_admin
+from firebase_admin import credentials, messaging
+
 
 # Initialize Flask app
 app = Flask(__name__)
 
 CORS(app)
+
+certf="./gas-leakage-f87ff-firebase-adminsdk-s1hlu-dcf98a649f.json"
+
+cred = credentials.Certificate(certf)
+
+firebase_admin.initialize_app(cred)
 
 def preprocess_input_for_prediction(input_data, zone='PowerConsumption_Zone1'):
     # Ensure the input data is in the correct format (as DataFrame)
@@ -83,6 +92,31 @@ def check_anomaly():
     except Exception as e:
         # Catch any exceptions and return error message
         return jsonify({'message': f"Error occurred: {str(e)}"}), 500
+    
+
+@app.route('/send_notification', methods=['POST'])
+def send_notification():
+    # Get the message from the POST request
+    data = request.json
+    message = data.get('message', 'No message')
+
+    # Prepare the notification message
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title="Notification from the Admin",
+            body=message
+        ),
+        token=data.get('device_token')  # You should pass the device token here
+    )
+
+    try:
+        # Send the message to the device
+        response = messaging.send(message)
+        return jsonify({"status": "success", "message": "Notification sent", "response": response}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+    
 
 # Run the Flask application
 if __name__ == '__main__':
